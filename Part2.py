@@ -42,7 +42,7 @@ def mle_emission(file):
     MLE_Emission = {}
     y_list = ['O', 'B-positive', 'I-positive', 'B-negative', 'I-negative',
               'B-neutral', 'I-neutral']
-    for x in data:
+    for y in data:
         county = 0
         for x in data[y]:
             county += data[y][x]    # count of x
@@ -62,7 +62,7 @@ def prediction(file, parameters):
               'B-neutral', 'I-neutral']
     for x in f.readlines():
         x = x.replace('\n', '')
-        if x != '':     # x = 'coffee'
+        if x != '':
             score = 0
             label = ''
             for y in y_list:        # iterate through all labels, find the best one
@@ -71,15 +71,16 @@ def prediction(file, parameters):
                         score = parameters[y+'-->'+x]
                         label = y
                 else:
-                    if parameters[y+'-->'+'#UNK#'] > score:
-                        score = parameters[y+'-->#UNK#']
-                        label = y    # if x not in parameter, label it as O; how to deal with #UNK#?
+                    if y+'-->'+'#UNK#' in parameters.keys():
+                        if parameters[y+'-->'+'#UNK#'] > score:
+                            score = parameters[y+'-->#UNK#']
+                            label = y
             out.write(x+' '+label+'\n')
         else:
             out.write('\n')
     f.close()
     out.close()
 
-# prediction('dev.in', mle_emission('train_fixed'))
+prediction('dev.in', mle_emission('train_fixed'))
 print(mle_emission('train_fixed'))
 
