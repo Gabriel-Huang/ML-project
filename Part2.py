@@ -26,7 +26,7 @@ def fix_input(file):
 def mle_emission(file):
     with open(file) as f:
         content = [line.strip() for line in f if line.strip()]
-    data = {}       # 2d dictionary: {x1:{y1:count(x1y1), y2:count(x1y2).....}, x2:{..}...}
+    data = {}
     for i in content:
         x = i.split()[0]
         y = i.split()[1]
@@ -47,11 +47,7 @@ def mle_emission(file):
         for x in data[y]:
             county += data[y][x]    # count of x
         for x in data[y]:
-            MLE_Emission['%s-->%s' % (y, x)] = data[y][x]/county    # mle for a(y,x)
-        for label in y_list:
-            if '%s-->%s' % (label, x) not in MLE_Emission:     # coffee: I-positive but not O, put O-->coffee as 0
-                MLE_Emission['%s-->%s' % (label, x)] = 0
-
+            MLE_Emission[y+'-->'+x] = data[y][x]/county    # mle for a(y,x)
     return MLE_Emission
 
 
@@ -70,17 +66,11 @@ def prediction(file, parameters):
                     if parameters[y+'-->'+x] > score:
                         score = parameters[y+'-->'+x]
                         label = y
-                else:
-                    if y+'-->'+'#UNK#' in parameters.keys():
-                        if parameters[y+'-->'+'#UNK#'] > score:
-                            score = parameters[y+'-->#UNK#']
-                            label = y
+            if score == 0:
+                label = 'O'
             out.write(x+' '+label+'\n')
         else:
             out.write('\n')
     f.close()
     out.close()
-
-prediction('dev.in', mle_emission('train_fixed'))
-print(mle_emission('train_fixed'))
 
