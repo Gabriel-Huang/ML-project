@@ -83,7 +83,7 @@ def viterbi(trans, emmis, obs, labels):
     # retrieve the reversed best path from path_mat
     for i in range(len(obs)-1):
         i = i+1
-        best_path_rev.append(path_mat[best_path_rev[i-1]][-i-1])
+        best_path_rev.append(path_mat[best_path_rev[i-1]][-i])
     best_path = best_path_rev[::-1]
     best_label = []
     for i in best_path:
