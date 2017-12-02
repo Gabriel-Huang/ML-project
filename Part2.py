@@ -1,5 +1,7 @@
+import codecs
+
 def fix_input(file):
-    with open(file) as f:
+    with codecs.open(file, "r", "UTF-8") as f:
         content = [line.strip() for line in f if line.strip()]
     dic = {}
     for i in content:
@@ -8,8 +10,8 @@ def fix_input(file):
             dic[x] = 1
         else:
             dic[x] += 1
-    out = open('train_fixed', 'w')
-    t = open(file, 'r')
+    out = codecs.open('train_fixed', 'w', "UTF-8")
+    t = codecs.open(file, 'r')
     for x in t.readlines():
         if x != '\n':
             if dic[x.split()[0]] < 3:
@@ -24,7 +26,7 @@ def fix_input(file):
 
 
 def mle_emission(file):
-    with open(file) as f:
+    with codecs.open(file, "r", "UTF-8") as f:
         content = [line.strip() for line in f if line.strip()]
     data = {}
     for i in content:
@@ -52,8 +54,8 @@ def mle_emission(file):
 
 
 def prediction(file, parameters):
-    f = open(file, 'r')
-    out = open('dev.prediction', 'w')
+    f = codecs.open(file, 'r', "UTF-8")
+    out = codecs.open('dev.prediction', 'w')
     y_list = ['O', 'B-positive', 'I-positive', 'B-negative', 'I-negative',
               'B-neutral', 'I-neutral']
     for x in f.readlines():
@@ -73,4 +75,7 @@ def prediction(file, parameters):
             out.write('\n')
     f.close()
     out.close()
+
+prediction('dev.in', mle_emission('train_fixed'))
+print(mle_emission('train_fixed')['O-->in'])
 

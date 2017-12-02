@@ -1,11 +1,12 @@
 import numpy as np
 import itertools
 import Part2
+import codecs
 
 
 def mle_transition(file):
-    f = open(file, 'r')
-    labels = ['START']
+    f = codecs.open(file, 'r')
+    labels = ['START', "UTF-8"]
     for line in f.readlines():
         if line != '\n':
             labels.append(line.split()[1])
@@ -95,8 +96,8 @@ emmis = Part2.mle_emission('train_fixed')
 labels = ['O', 'B-positive', 'I-positive', 'B-negative', 'I-negative',
                'B-neutral', 'I-neutral']
 
-out = open('EN_Part3.out', 'w')
-f = open('dev.in', 'r')
+out = codecs.open('EN_Part3.out', 'w', "UTF-8")
+f = codecs.open('dev.in', 'r', "UTF-8")
 data = []
 post = []
 
