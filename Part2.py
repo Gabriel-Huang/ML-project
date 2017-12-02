@@ -30,24 +30,24 @@ def mle_emission(file):
     for i in content:
         x = i.split()[0]
         y = i.split()[1]
-        if x not in data:
-            newx = {}
-            newx[y] = 1
-            data[x] = newx
+        if y not in data:
+            newy = {}
+            newy[x] = 1
+            data[y] = newy
         else:
-            if y in data[x]:
-                data[x][y] += 1
+            if x in data[y]:
+                data[y][x] += 1
             else:
-                data[x][y] = 1
+                data[y][x] = 1
     MLE_Emission = {}
     y_list = ['O', 'B-positive', 'I-positive', 'B-negative', 'I-negative',
               'B-neutral', 'I-neutral']
     for x in data:
-        countx = 0
-        for y in data[x]:
-            countx += data[x][y]    # count of x
-        for y in data[x]:
-            MLE_Emission['%s-->%s' % (y, x)] = data[x][y]/countx    # mle for a(y,x)
+        county = 0
+        for x in data[y]:
+            county += data[y][x]    # count of x
+        for x in data[y]:
+            MLE_Emission['%s-->%s' % (y, x)] = data[y][x]/county    # mle for a(y,x)
         for label in y_list:
             if '%s-->%s' % (label, x) not in MLE_Emission:     # coffee: I-positive but not O, put O-->coffee as 0
                 MLE_Emission['%s-->%s' % (label, x)] = 0
@@ -80,5 +80,6 @@ def prediction(file, parameters):
     f.close()
     out.close()
 
-prediction('dev.in', mle_emission('train_fixed'))
+# prediction('dev.in', mle_emission('train_fixed'))
+print(mle_emission('train_fixed'))
 
