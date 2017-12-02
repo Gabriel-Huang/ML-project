@@ -44,12 +44,20 @@ def mle_emission(file):
     MLE_Emission = {}
     y_list = ['O', 'B-positive', 'I-positive', 'B-negative', 'I-negative',
               'B-neutral', 'I-neutral']
+
     for y in data:
         county = 0
         for x in data[y]:
             county += data[y][x]    # count of x
         for x in data[y]:
             MLE_Emission[y+'-->'+x] = data[y][x]/county    # mle for a(y,x)
+
+    for i in content:
+        x = i.split()[0]
+        for y in y_list:
+            if y+'-->'+x not in MLE_Emission.keys():
+                MLE_Emission[y+'-->'+x] = 0
+
     return MLE_Emission
 
 

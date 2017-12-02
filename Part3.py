@@ -5,8 +5,8 @@ import codecs
 
 
 def mle_transition(file):
-    f = codecs.open(file, 'r')
-    labels = ['START', "UTF-8"]
+    f = codecs.open(file, 'r', "UTF-8")
+    labels = ['START']
     for line in f.readlines():
         if line != '\n':
             labels.append(line.split()[1])
