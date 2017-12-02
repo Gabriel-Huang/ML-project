@@ -1,27 +1,32 @@
-def fix_input(input):
+def fix_input(file):
+    with open(file) as f:
+        content = [line.strip() for line in f if line.strip()]
     dic = {}
-    for i in input:
+    for i in content:
         x = i.split()[0]
         if x not in dic:
             dic[x] = 1
         else:
             dic[x] += 1
-    output = []
-    for j in input:
-        x = j.split()[0]
-        if dic[x] < 3:
-            j = j.replace(x, '#UNK#')
-            output.append(j)
+    out = open('train_fixed', 'w')
+    t = open(file, 'r')
+    for x in t.readlines():
+        if x != '\n':
+            if dic[x.split()[0]] < 3:
+                out.write('#UNK# '+x.split()[1]+'\n')
+            else:
+                out.write(x)
         else:
-            output.append(j)
-    return output
+            out.write('\n')
+    out.close()
+    t.close()
+    return out
 
 
 def mle_emission(file):
     with open(file) as f:
         content = [line.strip() for line in f if line.strip()]
-    content = fix_input(content)
-    data = {}
+    data = {}       # 2d dictionary: {x1:{y1:count(x1y1), y2:count(x1y2).....}, x2:{..}...}
     for i in content:
         x = i.split()[0]
         y = i.split()[1]
@@ -40,11 +45,11 @@ def mle_emission(file):
     for x in data:
         countx = 0
         for y in data[x]:
-            countx += data[x][y]
+            countx += data[x][y]    # count of x
         for y in data[x]:
-            MLE_Emission['%s-->%s' % (y, x)] = data[x][y]/countx
+            MLE_Emission['%s-->%s' % (y, x)] = data[x][y]/countx    # mle for a(y,x)
         for label in y_list:
-            if '%s-->%s' % (label, x) not in MLE_Emission:
+            if '%s-->%s' % (label, x) not in MLE_Emission:     # coffee: I-positive but not O, put O-->coffee as 0
                 MLE_Emission['%s-->%s' % (label, x)] = 0
 
     return MLE_Emission
@@ -57,20 +62,23 @@ def prediction(file, parameters):
               'B-neutral', 'I-neutral']
     for x in f.readlines():
         x = x.replace('\n', '')
-        if x != '':
+        if x != '':     # x = 'coffee'
             score = 0
             label = ''
-            for y in y_list:
+            for y in y_list:        # iterate through all labels, find the best one
                 if y+'-->'+x in parameters.keys():
                     if parameters[y+'-->'+x] > score:
                         score = parameters[y+'-->'+x]
                         label = y
                 else:
-                    label = 'O'
+                    if parameters[y+'-->'+'#UNK#'] > score:
+                        score = parameters[y+'-->#UNK#']
+                        label = y    # if x not in parameter, label it as O; how to deal with #UNK#?
             out.write(x+' '+label+'\n')
         else:
             out.write('\n')
     f.close()
     out.close()
 
-prediction('dev.in', mle_emission('train'))
+prediction('dev.in', mle_emission('train_fixed'))
+

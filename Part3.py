@@ -12,7 +12,8 @@ def mle_transition(file):
         else:
             labels.append('STOP')
             labels.append('START')
-    labels = labels[:-1]
+
+    labels = labels[:-1] # drop last 'START'
 
     label_dic = {}
     for i in labels:
@@ -45,7 +46,7 @@ def mle_transition(file):
             mle_trans[i+i] = trans[i+i]/label_dic[i]
         else:
             mle_trans[i+i] = 0
-    return(mle_trans)
+    return mle_trans
 
 
 def viterbi(trans, emmis, obs, labels):
@@ -55,14 +56,20 @@ def viterbi(trans, emmis, obs, labels):
         path = []
         if i == 0:
             for j in range(matrix.shape[0]):
-                matrix[j][i] = trans['START'+labels[j]]*emmis[labels[j]+'-->'+obs[i]]
+                if labels[j]+'-->'+obs[i] in emmis:
+                    matrix[j][i] = trans['START'+labels[j]]*emmis[labels[j]+'-->'+obs[i]]
+                else:
+                    matrix[j][i] = trans['START'+labels[j]]*emmis[labels[j]+'-->#UNK#']
                 path.append(j)
         else:
             for j in range(matrix.shape[0]):
                 score = []
                 for k in range(matrix.shape[0]):
                     score.append(np.multiply(trans[labels[k]+labels[j]], matrix[k][i-1]))
-                score = np.multiply(score, emmis[labels[j]+'-->'+obs[i]])
+                if labels[j]+'-->'+obs[i] in emmis:
+                    score = np.multiply(score, emmis[labels[j]+'-->'+obs[i]])
+                else:
+                    score = np.multiply(score, emmis[labels[j] + '-->' + '#UNK#'])
                 matrix[j][i] = max(score)
                 path.append(np.argmax(score))
         path_mat.append(path)
@@ -71,6 +78,8 @@ def viterbi(trans, emmis, obs, labels):
     for i in range(len(labels)):
         last_score.append(np.multiply(matrix[i][-1], trans[labels[i]+'STOP']))
     best_path_rev = [np.argmax(last_score)]
+
+    # retrieve the reversed best path from path_mat
     for i in range(len(obs)-1):
         i = i+1
         best_path_rev.append(path_mat[best_path_rev[i-1]][-i-1])
@@ -81,9 +90,27 @@ def viterbi(trans, emmis, obs, labels):
     return best_label
 
 
-emmis = Part2.mle_emission('train')
-trans = mle_transition('train')
-inp = "the food good tuna good ."
-obs = inp.split()
+trans = mle_transition('train_fixed')
+emmis = Part2.mle_emission('train_fixed')
 labels = ['O', 'B-positive', 'I-positive', 'B-negative', 'I-negative',
-              'B-neutral', 'I-neutral']
+               'B-neutral', 'I-neutral']
+
+out = open('EN_Part3.out', 'w')
+f = open('dev.in', 'r')
+data = []
+post = []
+
+for x in f.readlines():
+    if x != '\n':
+        post.append(x.replace('\n', ''))
+    else:
+        data.append(post)
+        post = []
+
+for post in data:
+    v = viterbi(trans, emmis, post, labels)
+    for l in range(len(v)):
+        out.write(post[l]+' '+v[l]+'\n')
+    out.write('\n')
+f.close()
+out.close()

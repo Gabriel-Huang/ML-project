@@ -2,44 +2,40 @@ import Part2
 import Part3
 import numpy as np
 
+
 def max_marginal(emmis, trans, obs, labels):
 
-    alpha = []
+    alpha = np.zeros((len(labels), len(obs)))
 
     for j in range(len(obs)):
-        alpha_j = []
         if j == 0:
             for u in range(len(labels)):
-                alpha_j.append(trans['START'+labels[u]])
+                alpha[u][j] = (trans['START'+labels[u]])
         else:
             for u in range(len(labels)):
-                score = 0
                 for v in range(len(labels)):
-                    score += alpha[j-1][v]*emmis[labels[v]+'-->'+obs[j]]*trans[labels[v]+labels[u]]
-                alpha_j.append(score)
-        alpha.append(alpha_j)
+                    if labels[v]+'-->'+obs[j] in emmis.keys():
+                        alpha[u][j] += alpha[v][j-1]*emmis[labels[v]+'-->'+obs[j]]*trans[labels[v]+labels[u]]
+                    else:
+                        alpha[u][j] += alpha[v][j-1]*emmis[labels[v]+'-->'+'#UNK#']*trans[labels[v]+labels[u]]
 
-    alpha = np.transpose(alpha)
-
-    beta = []
+    beta = np.zeros((len(labels), len(obs)))
 
     for j in range(len(obs)):
-        beta_j = []
         b = -j-1
         if b == -1:
             for u in range(len(labels)):
-                beta_j.append(trans[labels[u]+'STOP'])
+                if labels[u] + '-->' + obs[b] in emmis.keys():
+                    beta[u][b] = trans[labels[u]+'STOP']*emmis[labels[u] + '-->' + obs[b]]
+                else:
+                    beta[u][b] = trans[labels[u]+'STOP']*emmis[labels[u] + '-->' + '#UNK#']
         else:
             for u in range(len(labels)):
-                score = 0
                 for v in range(len(labels)):
-                    score += beta[j-1][v] * emmis[labels[v] + '-->' + obs[b]] * trans[labels[v] + labels[u]]
-                beta_j.append(score)
-        beta.append(beta_j)
-
-    beta = beta[::-1]
-
-    beta = np.transpose(beta)
+                    if labels[u] + '-->' + obs[b] in emmis.keys():
+                        beta[u][b] += beta[v][b+1] * emmis[labels[u] + '-->' + obs[b]] * trans[labels[u] + labels[v]]
+                    else:
+                        beta[u][b] += beta[v][b+1] * emmis[labels[u] + '-->' + '#UNK#'] * trans[labels[u] + labels[v]]
 
     path = []
 
@@ -52,10 +48,28 @@ def max_marginal(emmis, trans, obs, labels):
 
     return path
 
-trans = Part3.mle_transition('train')
-emmis = Part2.mle_emission('train')
+trans = Part3.mle_transition('train_fixed')
+emmis = Part2.mle_emission('train_fixed')
+
 labels = ['O', 'B-positive', 'I-positive', 'B-negative', 'I-negative',
-              'B-neutral', 'I-neutral']
-inp = "the food good tuna good ."
-obs = inp.split()
-print(max_marginal(emmis, trans, obs, labels))
+          'B-neutral', 'I-neutral']
+
+out = open('EN_Part4.out', 'w')
+f = open('dev.in', 'r')
+data = []
+post = []
+
+for x in f.readlines():
+    if x != '\n':
+        post.append(x.replace('\n', ''))
+    else:
+        data.append(post)
+        post = []
+
+for post in data:
+    v = max_marginal(emmis, trans, post, labels)
+    for l in range(len(v)):
+        out.write(post[l]+' '+v[l]+'\n')
+    out.write('\n')
+f.close()
+out.close()
