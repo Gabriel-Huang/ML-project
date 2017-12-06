@@ -14,8 +14,8 @@ def max_marginal(emmis, trans, obs, labels):
         else:
             for u in range(len(labels)):
                 for v in range(len(labels)):
-                    if labels[v]+'-->'+obs[j] in emmis.keys():
-                        alpha[u][j] += alpha[v][j-1]*emmis[labels[v]+'-->'+obs[j]]*trans[labels[v]+labels[u]]
+                    if labels[v]+'-->'+obs[j-1] in emmis.keys():
+                        alpha[u][j] += alpha[v][j-1]*emmis[labels[v]+'-->'+obs[j-1]]*trans[labels[v]+labels[u]]
                     else:
                         alpha[u][j] += alpha[v][j-1]*emmis[labels[v]+'-->'+'#UNK#']*trans[labels[v]+labels[u]]
 
